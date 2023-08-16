@@ -752,15 +752,19 @@ class MultipleChoiceTask(Task):
         return lls
 
     def process_results(self, doc, results):
+        # Changed this method
         gold = doc["gold"]
 
         acc = 1.0 if np.argmax(results) == gold else 0.0
         completion_len = np.array([float(len(i)) for i in doc["choices"]])
         acc_norm = 1.0 if np.argmax(results / completion_len) == gold else 0.0
-
+        #  takes loglikelihoods output by the model, normalizes them to sum to 1, and computes the Brier Score using these probabilities + the gold answer choice having probability 1.0 .
+        brier_score = rf.brier_score(results, gold)
+        
         return {
             "acc": acc,
             "acc_norm": acc_norm,
+            "brier_score": brier_score,
         }
 
     def higher_is_better(self):
